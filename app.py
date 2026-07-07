@@ -1,10 +1,37 @@
+import logging
 import os
-from fastapi import FastAPI, UploadFile
+import time
+
+from fastapi import FastAPI, Request, UploadFile
 from PIL import Image
 import numpy
 import scipy.special
 
+# ---------- 日志配置 ----------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-5s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("mnist-symbols")
+
 app = FastAPI()
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """记录每个请求的方法、路径、耗时和状态码"""
+    start = time.time()
+    response = await call_next(request)
+    elapsed = (time.time() - start) * 1000
+    logger.info(
+        "%s %s → %s (%.1fms)",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed,
+    )
+    return response
 
 # 使用绝对路径，避免运行时工作目录不同导致找不到模型文件
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,6 +90,7 @@ class NeuralNetwork:
 
 
 model = NeuralNetwork()
+logger.info("✅ 模型加载完成，权重文件: model/wih.npy, model/who.npy")
 
 
 @app.post("/predict")
@@ -77,6 +105,8 @@ async def predict(
 
     label = model.predict(img)
     info = LABEL_MAP[label]
+
+    logger.info("识别结果: label=%d, symbol=%s, name=%s", label, info["symbol"], info["name"])
 
     return {
         "label": label,
