@@ -36,12 +36,20 @@ Recognize handwritten math symbols using a **two-layer fully connected neural ne
 
 ```
 Input (784) → Hidden (200) → Output (5)
+Parameters: 157,800
 ```
 
+| Layer | Shape | Params | Formula |
+|-------|-------|--------|---------|
+| Input → Hidden | `wih` | 156,800 | 784 × 200 |
+| Hidden → Output | `who` | 1,000 | 200 × 5 |
+| **Total** | | **157,800** | |
+
 - **Input**: 28×28 grayscale image, flattened to 784-dim vector
+- **Hidden**: 200 neurons, fully connected
+- **Output**: 5 classes, argmax for prediction
 - **Activation**: Sigmoid
-- **Output**: probability distribution over 5 classes, argmax for prediction
-- Weights stored in `model/` directory
+- **No bias terms** — pure weight-only network
 
 ## 🚀 Quick Start
 
