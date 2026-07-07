@@ -5,7 +5,6 @@ import time
 from fastapi import FastAPI, Request, UploadFile
 from PIL import Image
 import numpy
-import scipy.special
 
 # ---------- 日志配置 ----------
 logging.basicConfig(
@@ -58,7 +57,7 @@ class NeuralNetwork:
             os.path.join(MODEL_DIR, "who.npy")
         )
 
-        self.activation = scipy.special.expit
+        self.activation = lambda x: 1 / (1 + numpy.exp(-x))  # sigmoid 替代 scipy
 
     def predict(self, img):
         img = img.resize((28, 28))

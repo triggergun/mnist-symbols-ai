@@ -75,7 +75,24 @@ python app.py
 
 ```bash
 docker build -t mnist-symbols-ai .
-docker run -p 8000:8000 mnist-symbols-ai
+docker run -p 8000:8000 mnist-symbols-ai:latest
+```
+
+### Docker Compose
+
+创建 `docker-compose.yml`：
+
+```yaml
+services:
+  mnist-symbols:
+    image: mnist-symbols-ai:latest
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+```
+
+```bash
+docker compose up -d
 ```
 
 ## 📡 API 文档
