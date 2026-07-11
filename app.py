@@ -1,6 +1,8 @@
+import io
 import logging
 import os
 import time
+from datetime import datetime
 
 from fastapi import FastAPI, Request, UploadFile
 from PIL import Image
@@ -44,6 +46,10 @@ LABEL_MAP = {
     3: {"symbol": "≥", "name": "大于等于"},
     4: {"symbol": "≤", "name": "小于等于"},
 }
+
+# 上传图片保存目录，兼容 Windows / Linux / macOS
+SAVE_DIR = os.path.join(os.path.expanduser("~"), "mnist-predictions")
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 
 class NeuralNetwork:
@@ -96,8 +102,20 @@ logger.info("✅ 模型加载完成，权重文件: model/wih.npy, model/who.npy
 async def predict(
         file: UploadFile
 ):
+    # 读取上传的图片字节
+    contents = await file.read()
+
+    # 保存到用户家目录，文件名: 时间戳_原始文件名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    filename = f"{timestamp}_{file.filename}"
+    save_path = os.path.join(SAVE_DIR, filename)
+    with open(save_path, "wb") as f:
+        f.write(contents)
+    logger.info("图片已保存: %s", save_path)
+
+    # 用字节流打开图片，避免二次磁盘 IO
     img = Image.open(
-        file.file
+        io.BytesIO(contents)
     ).convert(
         "L"
     )
